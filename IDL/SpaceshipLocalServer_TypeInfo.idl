@@ -1,0 +1,93 @@
+/*
+Copyright (C) 2022 Matan Shitrit (0xMegaByte)
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+//information about IDL attributes can be found in the following link: https://docs.microsoft.com/en-us/windows/win32/midl/idl-attributes
+//MIDL Language refernce: https://docs.microsoft.com/en-us/windows/win32/midl/midl-language-reference
+
+//define IStatus interface
+[
+	object, //[object] interface attribute identifies a COM interface. (An interface attribute list that does not include the [object] attribute indicates a DCE RPC interface.)
+	uuid(2D9B9769-E4D1-4573-A6EC-939A1AF4DE9B),	//[uuid] interface attribute designates a universally unique identifier (UUID) that is assigned to the interface and that distinguishes it from other interfaces.
+	oleautomation,//[oleautomation] attribute indicates that an interface is compatible with Automation
+	helpstring("Gets spaceship's status info") // [helpstring] interface desecription
+]
+interface IStatus : IUnknown
+{
+	HRESULT ShowStatus();
+
+	//[out] - the parameter (destName) is being passed from the called function (server) to the caller (client).
+	//[retval] attribute designates the parameter that receives the return value of the member.
+	HRESULT GetDestination([out, retval] BSTR* destName);
+};
+
+//define the IEngine interface
+[
+	object,
+	uuid(43A1FBC7-59D4-47BB-91C4-F8A45357E9C9),
+	oleautomation,
+	helpstring("Handle spaceship's engine")
+]
+interface IEngine : IUnknown
+{
+	//handles engine lightspeed functionalities
+	HRESULT GoLightSpeed();
+	HRESULT GetLightSpeedState([out, retval] boolean* lightspeedState);
+
+	//handles normal engine state
+	HRESULT SpeedDown();
+	HRESULT SpeedUp();
+	HRESULT GetCurrentSpeed([out, retval] int* currentSpeed);
+};
+
+//define the ICreateSpaceship
+[
+	object,
+	uuid(88585B16-72E5-45CF-9632-095E7641908C),
+	oleautomation,
+	helpstring("This interface let you create a spaceship object")
+]
+interface ICreateSpaceship : IUnknown
+{
+	//[in] - the parameter (destName) is being passed from
+	//the caller (client) to the called function (server)
+	HRESULT SetDestination([in] BSTR destName);
+	HRESULT SetMaximumSpeed([in] int maximumSpeed);
+};
+
+//library statement
+[
+	uuid(A1EFABF4-DB5A-46F5-BD60-78850EF4D3FB),
+	version(4.20),
+	helpstring("Spaceship server with typeLib")
+]
+library SpaceshipLocalServerLib
+{
+	importlib("stdole32.tlb"); //[importlib] directive makes types that have already been compiled into another type library available to the type library being created.
+	[
+		uuid(F49E3052-12B9-483D-8FCF-D25BAFE0266A)
+	]
+	//The coclass statement provides a listing of the supported interfaces for a component object.
+	coclass SpaceShip
+	{
+		[default] interface ICreateSpaceship;
+		interface IEngine;
+		interface IStatus;
+	};
+}
